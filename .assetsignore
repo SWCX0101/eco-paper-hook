@@ -1,0 +1,7 @@
+# 这些文件不需要作为静态资源上传到 CDN
+.git
+.gitignore
+README.md
+DEPLOY-GUIDE.md
+wrangler.toml
+.assetsignore
