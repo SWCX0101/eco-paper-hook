@@ -2,82 +2,153 @@
 const sidebar = document.querySelector('.sidebar');
 const burger = document.querySelector('.burger');
 const scrim = document.querySelector('.scrim');
-if (burger) {
+if (burger && sidebar) {
   burger.addEventListener('click', () => {
     sidebar.classList.toggle('open');
-    scrim.classList.toggle('on');
+    if (scrim) scrim.classList.toggle('on');
   });
-  scrim.addEventListener('click', () => {
-    sidebar.classList.remove('open');
-    scrim.classList.remove('on');
-  });
+  if (scrim) {
+    scrim.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      scrim.classList.remove('on');
+    });
+  }
   document.querySelectorAll('.side-nav a').forEach(a => {
     a.addEventListener('click', () => {
       sidebar.classList.remove('open');
-      scrim.classList.remove('on');
+      if (scrim) scrim.classList.remove('on');
     });
   });
 }
 
 // ===== 滚动淡入 =====
-const io = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+const reveals = document.querySelectorAll('.reveal');
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-document.querySelectorAll('.reveal').forEach((el, i) => {
-  el.style.transitionDelay = (i % 3) * 80 + 'ms';
-  io.observe(el);
-});
+  reveals.forEach((el, i) => {
+    el.style.transitionDelay = (i % 3) * 80 + 'ms';
+    io.observe(el);
+  });
+
+  // 兜底：若观察器完全未生效（例如被 CSP/插件拦截），3 秒后强制显示全部内容
+  setTimeout(() => {
+    const anyShown = document.querySelector('.reveal.in');
+    if (!anyShown) reveals.forEach(el => el.classList.add('in'));
+  }, 3000);
+} else {
+  reveals.forEach(el => el.classList.add('in'));
+}
 
 // ===== 数字滚动 =====
-const ioNum = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    const el = e.target;
+const nums = document.querySelectorAll('[data-count]');
+if ('IntersectionObserver' in window && nums.length) {
+  const ioNum = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseFloat(el.dataset.count);
+      const pre = el.dataset.pre || '';
+      const suf = el.dataset.suf || '';
+      const dec = parseInt(el.dataset.dec || 0);
+      let start = null;
+      const run = (ts) => {
+        if (!start) start = ts;
+        const p = Math.min((ts - start) / 1300, 1);
+        const v = target * (1 - Math.pow(1 - p, 3));
+        el.textContent = pre + (dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-US')) + suf;
+        if (p < 1) requestAnimationFrame(run);
+      };
+      requestAnimationFrame(run);
+      ioNum.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  nums.forEach(n => ioNum.observe(n));
+} else {
+  nums.forEach(el => {
     const target = parseFloat(el.dataset.count);
-    const pre = el.dataset.pre || '';
-    const suf = el.dataset.suf || '';
     const dec = parseInt(el.dataset.dec || 0);
-    let start = null;
-    const run = (ts) => {
-      if (!start) start = ts;
-      const p = Math.min((ts - start) / 1300, 1);
-      const v = target * (1 - Math.pow(1 - p, 3));
-      el.textContent = pre + (dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-US')) + suf;
-      if (p < 1) requestAnimationFrame(run);
-    };
-    requestAnimationFrame(run);
-    ioNum.unobserve(el);
-  });
-}, { threshold: 0.5 });
-document.querySelectorAll('[data-count]').forEach(n => ioNum.observe(n));
-
-// ===== 询价表单：拼装邮件 =====
-const quoteForm = document.getElementById('quoteForm');
-if (quoteForm) {
-  quoteForm.addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    const d = new FormData(quoteForm);
-    const body = [
-      '姓名 / 公司：' + (d.get('name') || ''),
-      '联系方式：' + (d.get('contact') || ''),
-      '需求产品：' + (d.get('product') || ''),
-      '预计数量：' + (d.get('qty') || ''),
-      '交货国家/地区：' + (d.get('region') || ''),
-      '',
-      '需求说明：',
-      (d.get('message') || '')
-    ].join('\n');
-    const url = 'mailto:1450920332@qq.com'
-      + '?subject=' + encodeURIComponent('【官网询价】' + (d.get('product') || '纸钩') + ' - ' + (d.get('name') || ''))
-      + '&body=' + encodeURIComponent(body);
-    window.location.href = url;
-    const tip = document.getElementById('formTip');
-    if (tip) {
-      tip.style.display = 'block';
-      tip.textContent = '已调起邮件客户端。若未自动打开，请直接发送至 1450920332@qq.com 或 WhatsApp +86 155 1560 1979。';
-    }
+    el.textContent = (el.dataset.pre || '') +
+      (dec ? target.toFixed(dec) : Math.round(target).toLocaleString('en-US')) +
+      (el.dataset.suf || '');
   });
 }
+
+// ===== 询价表单：拼装邮件（四种语言共用，文案随页面语言切换）=====
+var PH_MAIL = '1450920332@qq.com';
+var PH_I18N = {
+  en: {
+    subject: 'Website inquiry',
+    name: 'Name', company: 'Company', email: 'Email', market: 'Market',
+    category: 'Product category', peg: 'Peg diameter', weight: 'Unit weight',
+    qty: 'Quantity', notes: 'Notes',
+    tip: 'Your email client should open. If not, write to 1450920332@qq.com or WhatsApp +86 155 1560 1979.'
+  },
+  zh: {
+    subject: '官网询价',
+    name: '姓名', company: '公司', email: '邮箱', market: '目标市场',
+    category: '需求产品', peg: '挂钩孔径', weight: '单件克重',
+    qty: '预计数量', notes: '需求说明',
+    tip: '已调起邮件客户端。若未自动打开，请直接发送至 1450920332@qq.com 或 WhatsApp +86 155 1560 1979。'
+  },
+  ru: {
+    subject: 'Запрос с сайта',
+    name: 'Имя', company: 'Компания', email: 'E-mail', market: 'Рынок',
+    category: 'Категория продукта', peg: 'Диаметр отверстия', weight: 'Вес, г',
+    qty: 'Количество', notes: 'Комментарий',
+    tip: 'Почтовый клиент должен открыться. Если нет — напишите на 1450920332@qq.com или в WhatsApp +86 155 1560 1979.'
+  },
+  ar: {
+    subject: 'استفسار من الموقع',
+    name: 'الاسم', company: 'الشركة', email: 'البريد الإلكتروني', market: 'السوق',
+    category: 'فئة المنتج', peg: 'قطر الفتحة', weight: 'الوزن بالغرام',
+    qty: 'الكمية', notes: 'ملاحظات',
+    tip: 'سيُفتح برنامج البريد. إن لم يفتح، راسلنا على 1450920332@qq.com أو واتساب ‎+86 155 1560 1979.'
+  }
+};
+var PH_DOCLANG = (document.documentElement.lang || 'en').toLowerCase();
+var PH_LANG = PH_DOCLANG.indexOf('zh') === 0 ? 'zh'
+  : PH_DOCLANG.indexOf('ru') === 0 ? 'ru'
+  : PH_DOCLANG.indexOf('ar') === 0 ? 'ar' : 'en';
+
+function sendInquiry(ev) {
+  if (ev && ev.preventDefault) ev.preventDefault();
+  var f = (ev && ev.target) ? ev.target : document.querySelector('.form');
+  if (!f) return false;
+  var t = PH_I18N[PH_LANG] || PH_I18N.en;
+  var d = new FormData(f);
+  var g = function (k) { return (d.get(k) || '').toString().trim(); };
+  var lines = [];
+  var pairs = [
+    ['name', t.name, ''], ['company', t.company, ''], ['email', t.email, ''],
+    ['market', t.market, ''], ['category', t.category, ''],
+    ['peg', t.peg, ' mm'], ['weight', t.weight, ' g'], ['qty', t.qty, '']
+  ];
+  pairs.forEach(function (p) {
+    var v = g(p[0]);
+    if (v) lines.push(p[1] + ': ' + v + p[2]);
+  });
+  lines.push('', t.notes + ':', g('notes'));
+  var subject = t.subject + ' - ' + (g('category') || 'Paper hooks') + ' - ' + (g('name') || '');
+  window.location.href = 'mailto:' + PH_MAIL
+    + '?subject=' + encodeURIComponent(subject)
+    + '&body=' + encodeURIComponent(lines.join('\n'));
+  var tip = document.getElementById('formTip');
+  if (tip) { tip.style.display = 'block'; tip.textContent = t.tip; }
+  return false;
+}
+
+// ===== 多语言：记住语言偏好 =====
+(function () {
+  var links = document.querySelectorAll('.lang-switch a, .tb-lang a');
+  for (var i = 0; i < links.length; i++) {
+    links[i].addEventListener('click', function () {
+      var m = this.getAttribute('href').match(/(?:\.\.\/)?(en|zh|ru|ar)\//);
+      if (m) { try { localStorage.setItem('ph-lang', m[1]); } catch (e) {} }
+    });
+  }
+})();

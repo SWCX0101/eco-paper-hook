@@ -30,13 +30,13 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
   background:var(--paper);color:var(--ink);line-height:1.75;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
-h1,h2,h3,h4,.serif{font-family:"Songti SC","Noto Serif CJK SC","Source Han Serif SC",Georgia,serif;font-weight:600;line-height:1.3;letter-spacing:.005em}
+h1,h2,h3,h4,.serif{font-family:Georgia,"Times New Roman","Iowan Old Style",serif;font-weight:600;line-height:1.22;letter-spacing:-.012em}
 ::selection{background:var(--leaf-2);color:var(--forest)}
 
 /* ---------------- 侧边栏 ---------------- */
@@ -406,3 +406,85 @@ section{padding:64px 0;position:relative}
   .stat:last-child{border-bottom:0}
   .grid-4{grid-template-columns:1fr}
 }
+
+/* ============================================================
+   语言切换器
+   ============================================================ */
+.lang-switch{
+  display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap;
+}
+.lang-switch a{
+  flex:1 1 0;min-width:0;text-align:center;padding:7px 4px;border-radius:8px;
+  font-size:11.5px;letter-spacing:.06em;color:rgba(231,238,230,.62);
+  border:1px solid rgba(255,255,255,.14);transition:.24s var(--ease);
+  font-family:inherit;line-height:1.2;
+}
+.lang-switch a:hover{color:#fff;border-color:rgba(168,196,154,.55);background:rgba(255,255,255,.06)}
+.lang-switch a.on{
+  background:var(--leaf-2);color:var(--forest);border-color:var(--leaf-2);font-weight:700;
+}
+.lang-switch a .lname{display:block;font-size:10px;opacity:.72;margin-top:1px;letter-spacing:0}
+
+/* 顶部栏语言切换（移动端） */
+.tb-lang{
+  margin-inline-start:auto;margin-inline-end:10px;display:flex;gap:4px;
+}
+.tb-lang a{
+  padding:5px 7px;border-radius:6px;font-size:11px;color:var(--ink-2);
+  border:1px solid var(--line);
+}
+.tb-lang a.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+
+/* ============================================================
+   RTL · 阿拉伯语
+   ============================================================ */
+[dir="rtl"] body{
+  font-family:"Segoe UI","Noto Sans Arabic","Dubai",Tahoma,system-ui,sans-serif;
+  letter-spacing:0;
+}
+[dir="rtl"] h1,[dir="rtl"] h2,[dir="rtl"] h3,[dir="rtl"] h4,[dir="rtl"] .serif{
+  font-family:"Noto Naskh Arabic","Traditional Arabic",Georgia,serif;
+  letter-spacing:0;line-height:1.45;
+}
+[dir="rtl"] .sidebar{left:auto;right:0}
+[dir="rtl"] .main{margin-left:0;margin-right:var(--sidebar)}
+[dir="rtl"] .page-head::before{right:auto;left:-140px}
+[dir="rtl"] .stat{border-left:0;border-right:1px solid var(--line);padding:28px 24px}
+[dir="rtl"] .stat:first-child{border-right:0;padding-right:0}
+[dir="rtl"] table th{text-align:right}
+[dir="rtl"] .timeline{padding-left:0;padding-right:26px}
+[dir="rtl"] .timeline::before{left:auto;right:6px}
+[dir="rtl"] .tl-item::before{left:auto;right:-26px}
+[dir="rtl"] .list li{padding-left:0;padding-right:22px}
+[dir="rtl"] .list li::before{left:auto;right:0}
+[dir="rtl"] .fab{right:auto;left:16px}
+[dir="rtl"] .crumb span{transform:scaleX(-1);display:inline-block}
+[dir="rtl"] .btn svg{transform:scaleX(-1)}
+[dir="rtl"] .side-nav a{text-align:right}
+[dir="rtl"] .card h3,[dir="rtl"] .card p,[dir="rtl"] .sec-head{text-align:right}
+[dir="rtl"] .cta-band::before{right:auto;left:-90px}
+[dir="rtl"] .cta-band{text-align:right}
+[dir="rtl"] .footer .cols{text-align:right}
+[dir="rtl"] .field label{text-align:right}
+[dir="rtl"] input,[dir="rtl"] textarea,[dir="rtl"] select{text-align:right;direction:rtl}
+[dir="rtl"] .faq summary{text-align:right}
+
+/* RTL 移动端：抽屉从右侧滑出 */
+@media(max-width:900px){
+  [dir="rtl"] .sidebar{transform:translateX(100%)}
+  [dir="rtl"] .sidebar.open{transform:translateX(0)}
+  [dir="rtl"] .main{margin-right:0}
+}
+
+/* RTL 下语言切换器保持 EN→AR 的视觉顺序，当前语言（阿语）落在起始侧 */
+[dir="rtl"] .lang-switch{flex-direction:row-reverse}
+[dir="rtl"] .tb-lang{flex-direction:row-reverse}
+[dir="rtl"] .side-foot{font-size:11px;line-height:1.65}
+
+/* 询价表单提交反馈提示（四语言共用，不改变原设计） */
+.form-tip{
+  margin-top:14px;padding:13px 16px;border-radius:10px;
+  background:rgba(126,168,120,.14);border:1px solid rgba(126,168,120,.42);
+  color:var(--forest-2);font-size:13px;line-height:1.6;
+}
+[dir="rtl"] .form-tip{text-align:right}

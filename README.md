@@ -1,6 +1,36 @@
-# PAPERHOOK · 环保纸质袜钩 官网
+# PAPERHOOK · 四语言外贸独立站
 
-一个纯静态多页网站，共 7 个页面，共享一套样式与侧边栏。
+纯静态多语言站点，支持 English / 简体中文 / Русский / العربية。
+
+## 目录
+
+| 路径 | 说明 |
+|---|---|
+| `index.html` | 语言入口，按浏览器语言自动跳转，也可手动选择 |
+| `en/` `zh/` `ru/` `ar/` | 各 7 个页面，共 28 页 |
+| `assets/style.css` | 共享样式，含 RTL 镜像规则 |
+| `assets/main.js` | 共享脚本，含语言偏好记忆与询价表单 |
+| `assets/img/` | 12 张图片，四语言共用 |
+| `sitemap.xml` | 28 URL × 5 组 hreflang |
+| `robots.txt` | 指向 sitemap |
+
+## 本地预览
+
+```bash
+python3 -m http.server 8899
+# http://localhost:8899/
+```
+
+## 修改内容
+
+页面由 `/root/.codebuddy/artifact/.../build_i18n.py` 生成（`site_core.py` + `page_*.py`）。
+直接改 HTML 也可，但重新生成会覆盖。
+
+## 部署
+
+GitHub Pages，`main` 分支根目录。推送后约 1 分钟自动生效。
+
+---
 
 ## 文件结构
 
